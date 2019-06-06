@@ -131,21 +131,29 @@ namespace Csla.Web.Mvc
     {
       try
       {
+        if (!bindingContext.ActionContext.HttpContext.Request.Form.ContainsKey(index))
+          return;
         var value = bindingContext.ActionContext.HttpContext.Request.Form[index].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(value))
+        if (value != null)
         {
           try
           {
             if (item.Type.Equals(typeof(string)))
-              Csla.Reflection.MethodCaller.CallPropertySetter(result, item.Name, value);
-            else
+              if (string.IsNullOrWhiteSpace(value))
+                Csla.Reflection.MethodCaller.CallPropertySetter(result, item.Name, string.Empty);
+              else
+                Csla.Reflection.MethodCaller.CallPropertySetter(result, item.Name, value);
+            else if (!string.IsNullOrWhiteSpace(value))
               Csla.Reflection.MethodCaller.CallPropertySetter(result, item.Name, Csla.Utilities.CoerceValue(item.Type, value.GetType(), null, value));
           }
           catch
           {
             if (item.Type.Equals(typeof(string)))
-              LoadProperty(result, item, value);
-            else
+              if (string.IsNullOrWhiteSpace(value))
+                LoadProperty(result, item, string.Empty);
+              else
+                LoadProperty(result, item, value);
+            else if (!string.IsNullOrWhiteSpace(value))
               LoadProperty(result, item, Csla.Utilities.CoerceValue(item.Type, value.GetType(), null, value));
           }
         }
